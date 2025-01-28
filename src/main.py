@@ -1,18 +1,20 @@
 import uvicorn
-from fastapi import FastAPI,APIRouter
+from fastapi import Depends, FastAPI,APIRouter
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
-import src.OAuth
+from src.OAuth import get_current_user
 from src.connection import initDB, get_db
 import src.analysis
 import src.main
 import src.operations
 import src.visualisation
 import os
+import src.OAuth
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from dotenv import load_dotenv
 from fastapi.responses import HTMLResponse
+from model.sql import User
 
 load_dotenv()
 
@@ -83,7 +85,7 @@ app.include_router(src.visualisation.router, tags=["Visualisation"])
 app.include_router(src.OAuth.router,tags=["Oauth"])
 
 @app.get('/trigger')
-def TriggerNotification():
+def TriggerNotification( current_user: User = Depends(get_current_user)):
     notify_due_tasks()
     return {
         "message":"Notification sent successfully"
@@ -173,5 +175,12 @@ def landing():
 # Run the application
 if __name__ == "__main__":
     print("Registered routes:", app.routes)
-    uvicorn.run(app, host="127.0.0.1")
+    uvicorn.run(app, host="127.0.0.1",debug=True)
+
+
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger("uvicorn.error")
+
 

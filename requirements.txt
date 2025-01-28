@@ -12,6 +12,6 @@ sendgrid
 pandas
 matplotlib
 seaborn
-jwt
+python-jose
 passlib
 bcrypt

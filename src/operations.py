@@ -6,12 +6,13 @@ from src.schemas import TaskCreateSchema,TaskUpdateSchema
 from datetime import datetime
 from fastapi import APIRouter, Depends, FastAPI
 from typing import List
-
+from src.OAuth import get_current_user
+from model.sql import User
 router = APIRouter()
 
 
 @router.post('/create')
-def create_task(task: TaskCreateSchema, db: Session = Depends(get_db)) -> dict:
+def create_task(task: TaskCreateSchema, current_user: User = Depends(get_current_user),db: Session = Depends(get_db)) -> dict:
     try:
         # Create a new task instance
         new_task = Tasks(
@@ -44,7 +45,7 @@ def create_task(task: TaskCreateSchema, db: Session = Depends(get_db)) -> dict:
 
 
 @router.delete('/task/{task_id}')
-def delete_task(task_id: int, db: Session = Depends(get_db)) -> dict:
+def delete_task(task_id: int,  current_user: User = Depends(get_current_user),db: Session = Depends(get_db)) -> dict:
     try:
         task_to_delete = db.query(Tasks).filter(Tasks.task_id == task_id).first()
 
@@ -70,7 +71,7 @@ def delete_task(task_id: int, db: Session = Depends(get_db)) -> dict:
 
 
 @router.put('/test/{task_id}')
-def update_task(task_id: int, task: TaskUpdateSchema, db: Session = Depends(get_db)) -> dict:
+def update_task(task_id: int, task: TaskUpdateSchema, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
     try:
         task_to_update = db.query(Tasks).filter(Tasks.task_id == task_id).first()
 
@@ -113,7 +114,7 @@ def update_task(task_id: int, task: TaskUpdateSchema, db: Session = Depends(get_
 
     
 @router.get('/all')
-def get_all_tasks(db: Session = Depends(get_db)) -> dict:
+def get_all_tasks( current_user: User = Depends(get_current_user),db: Session = Depends(get_db)) -> dict:
     try:
         tasks = db.query(Tasks).all()
 
@@ -138,7 +139,7 @@ def get_all_tasks(db: Session = Depends(get_db)) -> dict:
 
 
 @router.get('/tasks/{task_id}')
-def get_task_by_id(task_id: int, db: Session = Depends(get_db)) -> dict:
+def get_task_by_id(task_id: int, current_user: User = Depends(get_current_user),db: Session = Depends(get_db)) -> dict:
     try:
         task = db.query(Tasks).filter(Tasks.task_id == task_id).first()
 
@@ -164,7 +165,7 @@ def get_task_by_id(task_id: int, db: Session = Depends(get_db)) -> dict:
 
 
 @router.put('/status/{task_id}')
-def update_Task_status(task_id: int, task: TaskUpdateSchema, db: Session = Depends(get_db)) -> dict:
+def update_Task_status(task_id: int, task: TaskUpdateSchema, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
     try:
         task_to_update = db.query(Tasks).filter(Tasks.task_id == task_id).first()
 
@@ -206,7 +207,7 @@ def update_Task_status(task_id: int, task: TaskUpdateSchema, db: Session = Depen
 
 
 @router.post('/multicreate/', response_model=None)
-def bulk_insert_tasks(tasks_list: List[TaskCreateSchema], db: Session = Depends(get_db)) -> dict:
+def bulk_insert_tasks(tasks_list: List[TaskCreateSchema], current_user: User = Depends(get_current_user), db: Session = Depends(get_db)) -> dict:
     try:
         # Convert Pydantic models to database instances
         tasks_to_insert = [

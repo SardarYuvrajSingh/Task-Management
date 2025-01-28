@@ -133,10 +133,11 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 import pandas as pd
 import matplotlib.pyplot as plt
-from model.sql import Tasks
+from model.sql import Tasks,User
 import io
 from src.connection import get_db  # Ensure this is your database session getter
 import logging
+from src.OAuth import get_current_user
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -235,7 +236,7 @@ def plot_time_to_complete_vs_priority(df):
         raise HTTPException(status_code=500, detail="Error generating the scatter plot.")
 
 @router.get('/visualisation/{chart_type}', response_class=StreamingResponse)
-def generate_chart(chart_type: str, db: Session = Depends(get_db)):
+def generate_chart(chart_type: str, current_user: User = Depends(get_current_user),db: Session = Depends(get_db)):
     try:
         # Query tasks data from the database
         tasks = db.query(Tasks).all()

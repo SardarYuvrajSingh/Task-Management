@@ -38,3 +38,9 @@ class Tasks(base):
     def update_due_date(self, new_due_date: datetime):
         """Update the due date of the task."""
         self.due_date = new_due_date
+
+class User(base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)

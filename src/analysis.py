@@ -5,11 +5,13 @@ from src.connection import get_db
 from sqlalchemy.orm import Session
 from model.sql import Tasks
 from datetime import timedelta
+from src.OAuth import get_current_user
+from model.sql import User
 
 router=APIRouter()
 
 @router.get('/task_completion')
-def analyze_task_completion_time(db: Session = Depends(get_db)) -> dict:
+def analyze_task_completion_time( current_user: User = Depends(get_current_user),db: Session = Depends(get_db)) -> dict:
     """
     Calculate the completion time for each task and the average completion time in both hours and days.
     
@@ -49,7 +51,7 @@ def analyze_task_completion_time(db: Session = Depends(get_db)) -> dict:
 
 
 @router.get('/task_overdue')
-def analyze_task_overdue(db: Session = Depends(get_db)) -> dict:
+def analyze_task_overdue( current_user: User = Depends(get_current_user),db: Session = Depends(get_db)) -> dict:
     """
     Identify overdue tasks and calculate their percentage.
     
@@ -86,7 +88,7 @@ import pandas as pd
 
 # Cleaning data function
 @router.get('/duplicates', response_model=None)
-def cleaning_data(db: Session = Depends(get_db)) -> dict:
+def cleaning_data( current_user: User = Depends(get_current_user),db: Session = Depends(get_db)) -> dict:
     tasks = db.query(Tasks).all()  # Get all tasks from the database
     tasks_data = [task.__dict__ for task in tasks]  # Convert tasks to list of dicts
     
