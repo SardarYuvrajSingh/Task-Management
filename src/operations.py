@@ -1,5 +1,6 @@
 import sys
 from sqlalchemy.orm import Session
+import index
 from src.connection import get_db
 from model.sql import Tasks, get_timestamp
 from src.schemas import TaskCreateSchema,TaskUpdateSchema
@@ -9,6 +10,11 @@ from typing import List
 from src.OAuth import get_current_user
 from model.sql import User
 router = APIRouter()
+
+def push(channel,message):
+    index.pusher_client.trigger(channel, 'my-event', {'message': message})
+ 
+
 
 
 @router.post('/create')
@@ -30,7 +36,8 @@ def create_task(task: TaskCreateSchema, current_user: User = Depends(get_current
         db.add(new_task)
         db.commit()
         db.refresh(new_task)
-
+        message = f'{current_user.username} has successfully created a task with id:{new_task.task_id}'
+        push(current_user.username,message)
         return {
             "status": "ok",
             "message": "Task created successfully",
@@ -57,7 +64,8 @@ def delete_task(task_id: int,  current_user: User = Depends(get_current_user),db
 
         db.delete(task_to_delete)
         db.commit()
-
+        message = f'{current_user.username} has successfully deleted a task with id:{task_id}'
+        push(current_user.username,message)
         return {
             "status": "ok",
             "message": f"Task with id {task_id} deleted successfully"
@@ -98,6 +106,8 @@ def update_task(task_id: int, task: TaskUpdateSchema, current_user: User = Depen
 
         db.commit()
         db.refresh(task_to_update)
+        message = f'{current_user.username} has successfully updated a task with id:{update_task.task_id}'
+        push(current_user.username,message)
 
         return {
             "status": "ok",
